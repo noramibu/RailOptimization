@@ -4,3 +4,7 @@ build/
 .idea/
 .gradle/
 1.21.2/
+neoforge/run/
+forge/run/
+fabric/run/
+quilt/run

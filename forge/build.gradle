@@ -1,0 +1,101 @@
+plugins {
+    id 'java'
+    id 'idea'
+    id 'eclipse'
+    id 'maven-publish'
+    id 'net.minecraftforge.gradle' version "${forge_gradle_version}"
+}
+
+base {
+    archivesName = "${archives_base_name}-${mod_version}-forge"
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(project.java_version as int)
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['../common/src/main/java', 'src/main/java']
+        }
+        resources {
+            srcDirs = ['../common/src/main/resources', 'src/main/resources', 'src/generated/resources']
+        }
+        output.resourcesDir = file("$buildDir/classes/java/main")
+    }
+}
+
+minecraft {
+    runs {
+        configureEach {
+            workingDir = layout.projectDirectory.dir('run')
+            systemProperty 'eventbus.api.strictRuntimeChecks', 'true'
+            systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+            args '--mixin.config=railoptimization.mixins.json'
+        }
+
+        register('client')
+
+        register('server') {
+            args '--nogui'
+        }
+
+        register('gameTestServer')
+    }
+}
+
+repositories {
+    minecraft.mavenizer(it)
+    maven fg.forgeMaven
+    maven fg.minecraftLibsMaven
+    maven {
+        name = 'Sponge'
+        url = 'https://repo.spongepowered.org/repository/maven-public/'
+    }
+    mavenCentral()
+}
+
+dependencies {
+    implementation minecraft.dependency("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
+    annotationProcessor "net.minecraftforge:eventbus-validator:${eventbus_validator_version}"
+    compileOnly "org.spongepowered:mixin:${mixin_version}"
+}
+
+tasks.named('processResources', ProcessResources) {
+    def replaceProperties = [
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            mod_description        : mod_description,
+            forge_loader_version   : forge_loader_version_range,
+            minecraft_version_range: forge_minecraft_version_range
+    ]
+    inputs.properties(replaceProperties)
+
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
+        expand(replaceProperties)
+    }
+}
+
+tasks.named('jar', Jar) {
+    manifest {
+        attributes(['MixinConfigs': 'railoptimization.mixins.json'])
+    }
+    from('../LICENSE') {
+        rename { "${it}_${base.archivesName.get()}" }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = project.java_version as int
+    options.encoding = 'UTF-8'
+}
+
+publishing {
+    publications {
+        create('mavenJava', MavenPublication) {
+            from components.java
+        }
+    }
+}

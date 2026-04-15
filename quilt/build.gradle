@@ -1,0 +1,83 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
+    id 'maven-publish'
+}
+
+base {
+    archivesName = "${archives_base_name}-${mod_version}-quilt"
+}
+
+repositories {
+    maven {
+        name = 'Quilt'
+        url = 'https://maven.quiltmc.org/repository/release/'
+    }
+    maven {
+        name = 'Sponge'
+        url = 'https://repo.spongepowered.org/repository/maven-public/'
+    }
+}
+
+loom {
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['../common/src/main/java', 'src/main/java']
+        }
+        resources {
+            srcDirs = ['../common/src/main/resources', 'src/main/resources']
+        }
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    implementation "org.quiltmc:quilt-loader:${quilt_loader_version}"
+    compileOnly "org.spongepowered:mixin:${mixin_version}"
+}
+
+processResources {
+    inputs.property 'version', project.version
+    inputs.property 'quilt_loader_version', project.quilt_loader_version
+    inputs.property 'minecraft_version', project.minecraft_version
+
+    filesMatching('quilt.mod.json') {
+        expand(
+                version: project.version,
+                quilt_loader_version: project.quilt_loader_version,
+                minecraft_version: project.minecraft_version
+        )
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = project.java_version as int
+    options.encoding = 'UTF-8'
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.toVersion(project.java_version)
+    targetCompatibility = JavaVersion.toVersion(project.java_version)
+}
+
+jar {
+    from('../LICENSE') {
+        rename { "${it}_${base.archivesName.get()}" }
+    }
+}
+
+publishing {
+    publications {
+        create('mavenJava', MavenPublication) {
+            from components.java
+        }
+    }
+}
