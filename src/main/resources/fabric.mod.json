@@ -5,18 +5,19 @@
   "name": "railOptimization",
   "description": "A simple mod that makes powered/activator rails turn on/off up to 4x faster",
   "authors": [
+    "noramibu",
     "FX - PROCESS",
     "EasterGhost"
   ],
   "contact": {
-    "repo": "https://github.com/EasterGhost/RailOptimization"
+    "repo": "https://github.com/noramibu/RailOptimization/"
   },
   "license": "LGPL-3.0",
   "icon": "assets/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "railOptimization.railOptimizationFabric"
+      "me.noramibu.RailOptimization.RailOptimizationFabric"
     ]
   },
   "mixins": [

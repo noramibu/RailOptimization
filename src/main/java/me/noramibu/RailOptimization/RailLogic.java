@@ -1,4 +1,4 @@
-package railOptimization;
+package me.noramibu.RailOptimization;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -30,19 +30,15 @@ public class RailLogic {
                railShape == RailShape.ASCENDING_SOUTH;
     }
 
-    private static void notifyNeighborChanged(Level world, BlockPos pos, Block block, BlockPos fromPos) {
-        // 在1.21.2中，neighborChanged方法需要使用updateNeighborsAt替代
+    private static void notifyNeighborChanged(Level world, BlockPos pos, Block block) {
+        // åœ¨1.21.2ä¸­ï¼ŒneighborChangedæ–¹æ³•éœ€è¦ä½¿ç”¨updateNeighborsAtæ›¿ä»£
         world.updateNeighborsAt(pos, block);
     }
 
-    public static void giveShapeUpdate(Level level, BlockState state, BlockPos pos, BlockPos fromPos, Direction direction) {
+    public static void giveShapeUpdate(Level level, BlockState state, BlockPos pos) {
         // BlockState oldState = level.getBlockState(pos);
-        // 在1.21.2中，直接通知方块状态更新
+        // åœ¨1.21.2ä¸­ï¼Œç›´æŽ¥é€šçŸ¥æ–¹å—çŠ¶æ€æ›´æ–°
         level.updateNeighborsAt(pos, state.getBlock());
-    }
-
-    public static void setRailPowerLimit(int powerLimit) {
-        RAIL_POWER_LIMIT = powerLimit;
     }
 
     public static void customUpdateState(PoweredRailBlock self, BlockState state, Level level, BlockPos pos) {
@@ -240,10 +236,10 @@ public class RailLogic {
                                        int endPos, Direction direction, int currentPos, BlockPos blockPos) {
         if (currentPos == endPos) {
             BlockPos newPos = pos.relative(direction, currentPos+1);
-            RailLogic.giveShapeUpdate(world, mainState, newPos, pos, direction);
+            RailLogic.giveShapeUpdate(world, mainState, newPos);
             BlockState state = world.getBlockState(blockPos);
             if (state.is(self) && isAscending(state.getValue(SHAPE)))
-                RailLogic.giveShapeUpdate(world, mainState, newPos.above(), pos, direction);
+                RailLogic.giveShapeUpdate(world, mainState, newPos.above());
         }
     }
 
@@ -251,10 +247,10 @@ public class RailLogic {
                                           Direction direction, Block block, int currentPos, BlockPos blockPos) {
         if (currentPos == endPos) {
             BlockPos newPos = pos.relative(direction, currentPos+1);
-            notifyNeighborChanged(world, newPos, block, pos);
+            notifyNeighborChanged(world, newPos, block);
             BlockState state = world.getBlockState(blockPos);
             if (state.is(self) && isAscending(state.getValue(SHAPE)))
-                notifyNeighborChanged(world, newPos.above(), block, blockPos);
+                notifyNeighborChanged(world, newPos.above(), block);
         }
     }
 
@@ -263,25 +259,25 @@ public class RailLogic {
                                                         int[] count, int countAmt) {
         BlockPos pos1 = pos.relative(dir, c);
         if (c == 0 && count[1] == 0)
-            giveShapeUpdate(world, mainState, pos1.relative(dir.getOpposite()), pos, dir.getOpposite());
+            giveShapeUpdate(world, mainState, pos1.relative(dir.getOpposite()));
         shapeUpdateEnd(self, world, pos, mainState, countAmt, dir, c, pos1);
-        giveShapeUpdate(world, mainState, pos1.below(), pos, Direction.DOWN);
-        giveShapeUpdate(world, mainState, pos1.above(), pos, Direction.UP);
-        giveShapeUpdate(world, mainState, pos1.north(), pos, Direction.NORTH);
-        giveShapeUpdate(world, mainState, pos1.south(), pos, Direction.SOUTH);
+        giveShapeUpdate(world, mainState, pos1.below());
+        giveShapeUpdate(world, mainState, pos1.above());
+        giveShapeUpdate(world, mainState, pos1.north());
+        giveShapeUpdate(world, mainState, pos1.south());
     }
 
     private static void updateRailsSectionNorthSouthShape(PoweredRailBlock self, Level world, BlockPos pos,
                                                           int c, BlockState mainState, Direction dir,
                                                           int[] count, int countAmt) {
         BlockPos pos1 = pos.relative(dir, c);
-        giveShapeUpdate(world, mainState, pos1.west(), pos, Direction.WEST);
-        giveShapeUpdate(world, mainState, pos1.east(), pos, Direction.EAST);
-        giveShapeUpdate(world, mainState, pos1.below(), pos, Direction.DOWN);
-        giveShapeUpdate(world, mainState, pos1.above(), pos, Direction.UP);
+        giveShapeUpdate(world, mainState, pos1.west());
+        giveShapeUpdate(world, mainState, pos1.east());
+        giveShapeUpdate(world, mainState, pos1.below());
+        giveShapeUpdate(world, mainState, pos1.above());
         shapeUpdateEnd(self, world, pos, mainState, countAmt, dir, c, pos1);
         if (c == 0 && count[1] == 0)
-            giveShapeUpdate(world, mainState, pos1.relative(dir.getOpposite()), pos, dir.getOpposite());
+            giveShapeUpdate(world, mainState, pos1.relative(dir.getOpposite()));
     }
 
     private static void updateRails(PoweredRailBlock self, boolean eastWest, Level world,
@@ -294,18 +290,18 @@ public class RailLogic {
                 Block block = mainState.getBlock();
                 for (int c = countAmt; c >= i; c--) {
                     BlockPos p = pos.relative(dir, c);
-                    if (c == 0 && count[1] == 0) notifyNeighborChanged(world, p.relative(dir.getOpposite()), block, pos);
+                    if (c == 0 && count[1] == 0) notifyNeighborChanged(world, p.relative(dir.getOpposite()), block);
                     neighborUpdateEnd(self, world, pos, countAmt, dir, block, c, p);
-                    notifyNeighborChanged(world, p.below(), block, pos);
-                    notifyNeighborChanged(world, p.above(), block, pos);
-                    notifyNeighborChanged(world, p.north(), block, pos);
-                    notifyNeighborChanged(world, p.south(), block, pos);
+                    notifyNeighborChanged(world, p.below(), block);
+                    notifyNeighborChanged(world, p.above(), block);
+                    notifyNeighborChanged(world, p.north(), block);
+                    notifyNeighborChanged(world, p.south(), block);
                     BlockPos pos2 = pos.relative(dir, c).below();
-                    notifyNeighborChanged(world, pos2.below(), block, pos);
-                    notifyNeighborChanged(world, pos2.north(), block, pos);
-                    notifyNeighborChanged(world, pos2.south(), block, pos);
-                    if (c == countAmt) notifyNeighborChanged(world, pos.relative(dir, c + 1).below(), block, pos);
-                    if (c == 0 && count[1] == 0) notifyNeighborChanged(world, p.relative(dir.getOpposite()).below(), block, pos);
+                    notifyNeighborChanged(world, pos2.below(), block);
+                    notifyNeighborChanged(world, pos2.north(), block);
+                    notifyNeighborChanged(world, pos2.south(), block);
+                    if (c == countAmt) notifyNeighborChanged(world, pos.relative(dir, c + 1).below(), block);
+                    if (c == 0 && count[1] == 0) notifyNeighborChanged(world, p.relative(dir.getOpposite()).below(), block);
                 }
                 for (int c = countAmt; c >= i; c--)
                     updateRailsSectionEastWestShape(self, world, pos, c, mainState, dir, count, countAmt);
@@ -318,18 +314,18 @@ public class RailLogic {
                 Block block = mainState.getBlock();
                 for (int c = countAmt; c >= i; c--) {
                     BlockPos p = pos.relative(dir,c);
-                    notifyNeighborChanged(world, p.west(), block, pos);
-                    notifyNeighborChanged(world, p.east(), block, pos);
-                    notifyNeighborChanged(world, p.below(), block, pos);
-                    notifyNeighborChanged(world, p.above(), block, pos);
+                    notifyNeighborChanged(world, p.west(), block);
+                    notifyNeighborChanged(world, p.east(), block);
+                    notifyNeighborChanged(world, p.below(), block);
+                    notifyNeighborChanged(world, p.above(), block);
                     neighborUpdateEnd(self, world, pos, countAmt, dir, block, c, p);
-                    if (c == 0 && count[1] == 0) notifyNeighborChanged(world, p.relative(dir.getOpposite()), block, pos);
+                    if (c == 0 && count[1] == 0) notifyNeighborChanged(world, p.relative(dir.getOpposite()), block);
                     BlockPos pos2 = pos.relative(dir,c).below();
-                    notifyNeighborChanged(world, pos2.west(), block, pos);
-                    notifyNeighborChanged(world, pos2.east(), block, pos);
-                    notifyNeighborChanged(world, pos2.below(), block, pos);
-                    if (c == countAmt) notifyNeighborChanged(world, pos.relative(dir,c + 1).below(), block, pos);
-                    if (c == 0 && count[1] == 0) notifyNeighborChanged(world, p.relative(dir.getOpposite()).below(), block, pos);
+                    notifyNeighborChanged(world, pos2.west(), block);
+                    notifyNeighborChanged(world, pos2.east(), block);
+                    notifyNeighborChanged(world, pos2.below(), block);
+                    if (c == countAmt) notifyNeighborChanged(world, pos.relative(dir,c + 1).below(), block);
+                    if (c == 0 && count[1] == 0) notifyNeighborChanged(world, p.relative(dir.getOpposite()).below(), block);
                 }
                 for (int c = countAmt; c >= i; c--)
                     updateRailsSectionNorthSouthShape(self, world, pos, c, mainState, dir, count, countAmt);
