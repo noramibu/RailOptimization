@@ -20,9 +20,6 @@
       "icon": "assets/icon.png"
     },
     "intermediate_mappings": "net.fabricmc:intermediary",
-    "mixins": [
-      "railoptimization.mixins.json"
-    ],
     "depends": [
       {
         "id": "quilt_loader",
@@ -33,5 +30,8 @@
         "versions": "${minecraft_version}"
       }
     ]
-  }
+  },
+  "mixin": [
+    "railoptimization.mixins.json"
+  ]
 }

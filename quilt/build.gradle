@@ -40,6 +40,7 @@ sourceSets {
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
     implementation "org.quiltmc:quilt-loader:${quilt_loader_version}"
+    implementation "org.quiltmc:quilt-loader-dependencies:${quilt_loader_version}"
     compileOnly "org.spongepowered:mixin:${mixin_version}"
 }
 
@@ -80,4 +81,26 @@ publishing {
             from components.java
         }
     }
+}
+
+def runModsDir = layout.projectDirectory.dir('run/mods')
+def devRunModDir = layout.projectDirectory.dir('run/mods/railoptimization-dev')
+
+def cleanLegacyRunClientModJars = tasks.register('cleanLegacyRunClientModJars', Delete) {
+    delete fileTree(runModsDir) {
+        include 'RailOptimization-*-quilt*.jar'
+        include 'railoptimization-*.jar'
+    }
+    delete layout.projectDirectory.dir('run/mods/__inspect')
+}
+
+def syncRunClientModJar = tasks.register('syncRunClientModJar', Sync) {
+    dependsOn tasks.named('jar')
+    from(tasks.named('jar').flatMap { it.archiveFile })
+    into(devRunModDir)
+}
+
+tasks.named('runClient').configure {
+    dependsOn cleanLegacyRunClientModJars
+    dependsOn syncRunClientModJar
 }
