@@ -39,17 +39,19 @@ dependencies {
     compileOnly "org.spongepowered:mixin:${mixin_version}"
 }
 
+def fabricResourceProperties = [
+        version              : project.version,
+        minecraft_version    : project.minecraft_version,
+        fabric_loader_version: project.fabric_loader_version
+]
+
 processResources {
     inputs.property 'version', project.version
     inputs.property 'minecraft_version', project.minecraft_version
     inputs.property 'fabric_loader_version', project.fabric_loader_version
 
     filesMatching('fabric.mod.json') {
-        expand(
-                version: project.version,
-                minecraft_version: project.minecraft_version,
-                fabric_loader_version: project.fabric_loader_version
-        )
+        expand(fabricResourceProperties)
     }
 }
 
@@ -64,9 +66,11 @@ java {
     targetCompatibility = JavaVersion.toVersion(project.java_version)
 }
 
+def fabricArchiveName = base.archivesName.get()
+
 jar {
     from('../LICENSE') {
-        rename { "${it}_${base.archivesName.get()}" }
+        rename { "${it}_${fabricArchiveName}" }
     }
 }
 

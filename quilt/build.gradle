@@ -44,17 +44,19 @@ dependencies {
     compileOnly "org.spongepowered:mixin:${mixin_version}"
 }
 
+def quiltResourceProperties = [
+        version             : project.version,
+        quilt_loader_version: project.quilt_loader_version,
+        minecraft_version   : project.minecraft_version
+]
+
 processResources {
     inputs.property 'version', project.version
     inputs.property 'quilt_loader_version', project.quilt_loader_version
     inputs.property 'minecraft_version', project.minecraft_version
 
     filesMatching('quilt.mod.json') {
-        expand(
-                version: project.version,
-                quilt_loader_version: project.quilt_loader_version,
-                minecraft_version: project.minecraft_version
-        )
+        expand(quiltResourceProperties)
     }
 }
 
@@ -69,9 +71,11 @@ java {
     targetCompatibility = JavaVersion.toVersion(project.java_version)
 }
 
+def quiltArchiveName = base.archivesName.get()
+
 jar {
     from('../LICENSE') {
-        rename { "${it}_${base.archivesName.get()}" }
+        rename { "${it}_${quiltArchiveName}" }
     }
 }
 

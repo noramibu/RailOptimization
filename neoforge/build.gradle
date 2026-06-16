@@ -90,8 +90,9 @@ tasks.named('jar', Jar) {
     manifest {
         attributes(['MixinConfigs': 'railoptimization.mixins.json'])
     }
+    def neoForgeArchiveName = base.archivesName.get()
     from('../LICENSE') {
-        rename { "${it}_${base.archivesName.get()}" }
+        rename { "${it}_${neoForgeArchiveName}" }
     }
 }
 
